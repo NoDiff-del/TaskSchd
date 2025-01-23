@@ -12,7 +12,7 @@ $suspiciousKeywords = @(
     "MMC"
 )
 
-Write-Host "Scanning tasks in $taskDir and subfolders..." -ForegroundColor Yellow
+Write-Host "Scanning tasks in $taskDir and subfolders..." -ForegroundColor Cyan
 
 function Process-TaskFile {
     param (
@@ -31,17 +31,26 @@ function Process-TaskFile {
             $arguments = $action.Arguments
 
             if ($command) {
-                Write-Host (" ")
-                Write-Host ("Scanning task: {0}" -f $taskFilePath) -ForegroundColor Yellow
-                Write-Host ("Command: {0}" -f $command) -ForegroundColor Cyan
+                Write-Host ""
+                Write-Host ("Scanning task: {0}" -f $taskFilePath) -ForegroundColor DarkYellow
+
+                $taskDate = $task.Task.RegistrationInfo.Date
+                if ($taskDate) {
+                    $formattedDate = $taskDate -replace "T", " "
+                    $formattedDate = $formattedDate.Split('.')[0]
+                    Write-Host ("Date: {0}" -f $formattedDate) -ForegroundColor DarkCyan
+                }
+
+                Write-Host ("Command: {0}" -f $command) -ForegroundColor Gray
 
                 if ($arguments) {
-                    Write-Host ("Arguments: {0}" -f $arguments) -ForegroundColor Cyan
+                    Write-Host ("Arguments: {0}" -f $arguments) -ForegroundColor Gray
                 }
+
                 foreach ($keyword in $suspiciousKeywords) {
                     $regex = "\b$keyword\b"
                     if ($command -match $regex -or $arguments -match $regex) {
-                        Write-Host ("Detected suspicious keyword: {0}" -f $keyword) -ForegroundColor Red
+                        Write-Host ("Suspicious keyword detected: {0}" -f $keyword) -ForegroundColor DarkRed
                     }
                 }
             }
@@ -58,8 +67,7 @@ $counter = 0
 
 foreach ($taskFile in $allTasks) {
     $counter++
-
     Process-TaskFile -taskFilePath $taskFile.FullName
 }
 
-Write-Host "`nScan complete! Processed $counter tasks." -ForegroundColor Green
+Write-Host "`nScan complete! Processed $counter tasks." -ForegroundColor DarkGreen
